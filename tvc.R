@@ -238,11 +238,19 @@ cum_hazard <- function(hazard, subdiv = 2000) {
   }
 }
 
-survival <- function(hazard) {
+survival2 <- function(hazard) {
   ## TODO: vectorize
   function(t) {
     ch <- cum_hazard(hazard)
     exp(-ch(t))
+  }
+}
+
+survival <- function(hazard) {
+  function(t) {
+    ch <- cum_hazard(hazard)
+    val <- sapply(t, ch)
+    exp(-val)
   }
 }
 
