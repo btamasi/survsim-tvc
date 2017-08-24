@@ -73,3 +73,24 @@ surv0 <- function(t) exp(0.05 / 0.04 * (1 - exp(0.04 * t)))
 surv1 <- survival(h1)
 curve(surv0, from = 0, to = 40, add = TRUE, col = "red", lwd = 2, lty = 2)
 curve(surv1, from = 0, to = 40, add = TRUE, col = "blue", lwd = 2, lty = 2)
+
+## 2) estimate the misspecified model
+fit2 <- coxph(Surv(tstart, tstop, event) ~ x1 + x2 + x.tv1 + x.tv2 + x.step + s, 
+              data = tv_data)
+
+## compare estimated parameters to the originals
+data.frame(bhat = fit2$coefficients, se = sqrt(diag(fit2$var)),
+           b = c(0.3, 0.3, -0.5, -0.3, 0.6, NA)) %>%
+  ggplot(aes(x = attr(fit2$coefficients, "names"), y = b)) + 
+  geom_errorbar(aes(ymin=bhat-2*se, ymax=bhat+2*se), width = .05) +
+  geom_point(aes(y = bhat), color = "black") + geom_point(aes(y = b), color = "red")
+
+## compare estimated baseline survival curves to the original survival functions
+newdat <- data.frame(id = c(1, 2), x1 = c(0, 0), x2 = c(0, 0), tstart = c(0, 0), tstop = c(50, 50), 
+                     event = c(0, 0), x.tv1 = c(0, 0), x.tv2 = c(0, 0), x.step = c(0, 0), 
+                     s = c(0, 1))
+plot(survfit(fit2, newdata = newdat), xmax = 40, conf.int = TRUE)
+surv0 <- function(t) exp(0.05 / 0.04 * (1 - exp(0.04 * t)))
+surv1 <- survival(h1)
+curve(surv0, from = 0, to = 40, add = TRUE, col = "red", lwd = 2, lty = 2)
+curve(surv1, from = 0, to = 40, add = TRUE, col = "blue", lwd = 2, lty = 2)
