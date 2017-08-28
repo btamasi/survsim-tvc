@@ -318,3 +318,32 @@ sim_gen <- function(N, ...) {
   # eval(f, envir = ll)
   simdat
 }
+
+survsim <- function(x, beta, h0 = list(type = "exp", lambda = 0.1), 
+                    cens = NULL, discrete = FALSE) {
+  x <- as.matrix(x)
+  N <- nrow(x)
+  stopifnot(ncol(x) == length(beta))
+  ## Draw survival times
+  rs <- exp(x %*% beta)
+  U <- runif(N)
+  Tsim <- switch(h0$type,
+                 exp = -log(U) / (h0$lambda * rs),
+                 weibull = (-log(U) / (h0$lambda * rs)) ^ (1 / h0$nu),
+                 gompertz = 1 / h0$alpha * log(1 - (h0$alpha * log(U)) / (h0$lambda * rs))
+  )
+  ## Censoring
+  if (!is.null(cens)) {
+    evnt <- as.numeric(Tsim <= cens)
+    Tsim <- pmin(Tsim, cens)
+  } else {
+    evnt <- rep(1, N)
+  }
+  ## Discrete times
+  if (discrete) {
+    Tsim <- ceiling(Tsim)
+  }
+  data.frame(time = Tsim, 
+             event = evnt,
+             x)
+}
