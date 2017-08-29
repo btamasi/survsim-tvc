@@ -55,14 +55,7 @@ evnt_s <- sapply(id_s, function(i) {
 })
 evnt_s <- event_table(id_s, cens_s, evnt_s)
 
-# evnt_s <- evnt_s[order(evnt_s$id), ]
-# tvc_s <- tvc_s[order(tvc_s$id, tvc_s$time), ]
-
-# tvc_s$time <- unsplit(lapply(split(tvc_s$time, tvc_s$id), function(x) ))
-
 evnt_s$time <- evnt$time[evnt$id %in% id_s] + evnt_s$time
-# tt2 <- tvc_s$time[tvc_s$id %in% id_s] + 
-#   rep(evnt$time[evnt$id %in% id_s], table(tvc_s$id[tvc_s$id %in% id_s]))
 tvc_s$time <- do.call(c, lapply(id_s, function(i) {
   tvc_s$time[tvc_s$id == i] + evnt$time[evnt$id == i]
 }))
